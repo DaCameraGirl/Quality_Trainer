@@ -1,159 +1,464 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Image Quality Evaluation Trainer</title>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background:#111827;
-    color:white;
-    margin:0;
-    padding:0;
+:root{
+  --bg:#0f172a; --panel:#111827; --panel2:#1f2937; --text:#f9fafb; --muted:#cbd5e1;
+  --blue:#2563eb; --green:#22c55e; --yellow:#f59e0b; --red:#ef4444; --line:#334155; --purple:#7c3aed;
+  --input:#020617; --notice:#172554; --noticeText:#dbeafe;
 }
-header {
-    background:#1f2937;
-    padding:20px;
-    text-align:center;
+body.light{
+  --bg:#f8fafc; --panel:#ffffff; --panel2:#e2e8f0; --text:#0f172a; --muted:#475569;
+  --line:#cbd5e1; --input:#f8fafc; --notice:#dbeafe; --noticeText:#172554;
 }
-main {
-    padding:20px;
-    max-width:900px;
-    margin:auto;
-}
-.card {
-    background:#1f2937;
-    border-radius:12px;
-    padding:20px;
-    margin-bottom:20px;
-}
-button {
-    background:#2563eb;
-    color:white;
-    border:none;
-    padding:12px 18px;
-    border-radius:8px;
-    cursor:pointer;
-    margin:5px;
-}
-select, textarea {
-    width:100%;
-    padding:10px;
-    border-radius:8px;
-    margin-top:10px;
-    margin-bottom:10px;
-}
-.result {
-    margin-top:15px;
-    padding:15px;
-    border-radius:10px;
-    background:#0f172a;
-}
-.good { border-left:5px solid #22c55e; }
-.warn { border-left:5px solid #f59e0b; }
-.bad { border-left:5px solid #ef4444; }
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:radial-gradient(circle at top,var(--panel2) 0%,var(--bg) 48%);color:var(--text);margin:0}
+header{background:color-mix(in srgb, var(--panel) 88%, transparent);padding:26px 18px;text-align:center;border-bottom:1px solid var(--line)}
+header h1{margin:0 0 8px;font-size:2rem} header p{margin:0;color:var(--muted)}
+main{padding:22px;max-width:1200px;margin:auto}
+.topbar{display:flex;justify-content:flex-end;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:18px;box-shadow:0 14px 40px #0002}
+label{display:block;margin:14px 0 6px;font-weight:700}
+select,textarea,input{width:100%;padding:12px;border-radius:10px;margin-bottom:8px;border:1px solid var(--line);background:var(--input);color:var(--text)}
+textarea{min-height:120px;resize:vertical}
+button{background:var(--blue);color:#fff;border:none;padding:12px 18px;border-radius:10px;cursor:pointer;margin:8px 8px 8px 0;font-weight:700}
+button.secondary{background:#475569} button.purple{background:var(--purple)} button:hover{filter:brightness(1.08)}
+.result{margin-top:16px;padding:16px;border-radius:14px;background:var(--input);border:1px solid var(--line)}
+.match{border-left:6px solid var(--green)} .mismatch{border-left:6px solid var(--red)} .unclear{border-left:6px solid var(--yellow)}
+.notice{background:var(--notice);border-left:5px solid #60a5fa;padding:12px;border-radius:12px;color:var(--noticeText);margin-bottom:18px}
+.small{color:var(--muted);font-size:.95rem;line-height:1.45}
+.pill{display:inline-block;padding:5px 10px;border-radius:999px;margin:4px 4px 4px 0;background:#334155;color:white;font-size:.9rem}
+.t1{background:#14532d}.t2{background:#713f12}.t3{background:#7f1d1d}.tp{background:#4c1d95}
+table{width:100%;border-collapse:collapse;margin-top:10px} td,th{border:1px solid var(--line);padding:9px;vertical-align:top} th{background:var(--input)}
+details{background:var(--input);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px} summary{cursor:pointer;font-weight:700}
+.checklist label{font-weight:400;margin:7px 0;display:flex;gap:8px;align-items:flex-start}
+.checklist input{width:auto;margin-top:2px}
+.example{background:var(--input);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.example h4{margin:0 0 8px}
+.fakeimg{height:150px;border-radius:12px;background:linear-gradient(135deg,#334155,#020617);border:1px dashed #64748b;display:flex;align-items:center;justify-content:center;text-align:center;color:#cbd5e1;padding:12px;margin-bottom:10px}
+body.light .fakeimg{background:linear-gradient(135deg,#e2e8f0,#ffffff);color:#334155}
+.tabs button{background:#334155}.tabs button.active{background:var(--blue)}
+.hidden{display:none}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.topbar{justify-content:center}}
 </style>
 </head>
 <body>
-
 <header>
-<h1>📸 Image Quality Evaluation Trainer</h1>
-<p>Interactive onboarding practice + answer checker</p>
+  <h1>📸 Image Quality Evaluation Trainer</h1>
+  <p>Guideline-faithful onboarding checker + example-based practice</p>
 </header>
 
 <main>
+  <div class="topbar">
+    <button class="secondary" onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
+  </div>
 
-<div class="card">
-<h2>✅ Answer Cross-Checker</h2>
+  <div class="notice">
+    <b>Core decision rule:</b> Tier 1 = clear/easy extraction. Tier 2 = issues exist but key information is still reliably readable. Tier 3 = key information is missing, obscured, or cannot be reliably extracted.
+  </div>
 
-<label>Category</label>
-<select id="category">
-<option>Medical Device</option>
-<option>Receipt</option>
-<option>Pass</option>
-<option>Event</option>
-<option>Contact</option>
-</select>
+  <div class="tabs">
+    <button class="active" onclick="showTab('checker', this)">✅ Answer Checker</button>
+    <button onclick="showTab('examples', this)">🖼️ Example Practice</button>
+    <button onclick="showTab('rubric', this)">📚 Full Rubric</button>
+  </div>
 
-<label>Factor</label>
-<select id="factor">
-<option>Text Contrast</option>
-<option>Lighting</option>
-<option>Orientation</option>
-<option>Text Clarity</option>
-<option>Completeness</option>
-<option>Object Count</option>
-<option>Background</option>
-</select>
+  <section id="checkerTab">
+    <div class="grid">
+      <section class="card">
+        <h2>✅ Answer Cross-Checker</h2>
+        <p class="small">Use the checklist, not just the notes box. This app cannot see your onboarding image, because apparently browsers still refuse clairvoyance. The checklist forces the same decisions the guideline examples demonstrate.</p>
 
-<label>Your Tier Choice</label>
-<select id="tier">
-<option>Tier 1</option>
-<option>Tier 2</option>
-<option>Tier 3</option>
-</select>
+        <label>Category</label>
+        <select id="category" onchange="refreshFactorList(); renderChecklist(); showFactorGuide();">
+          <option>Medical Device</option>
+          <option>Receipt</option>
+          <option>Pass</option>
+          <option>Event</option>
+          <option>Contact</option>
+        </select>
 
-<label>Describe what you see in the image</label>
-<textarea id="notes" rows="6" placeholder="Example: Slight glare on screen but numbers are still readable..."></textarea>
+        <label>Factor</label>
+        <select id="factor" onchange="renderChecklist(); showFactorGuide()"></select>
 
-<button onclick="checkAnswer()">Cross Check Answer</button>
+        <label>Your Tier Choice</label>
+        <select id="tier">
+          <option value="1">Tier 1</option>
+          <option value="2">Tier 2</option>
+          <option value="3">Tier 3</option>
+        </select>
 
-<div id="result"></div>
-</div>
+        <div class="card" style="background:var(--input);margin:12px 0;padding:14px">
+          <h3 style="margin-top:0">Rubric Checklist</h3>
+          <p class="small">Check every statement that matches the image. Highest matching severity usually wins.</p>
+          <div id="checklist" class="checklist"></div>
+        </div>
 
-<div class="card">
-<h2>🧠 Quick Tier Logic</h2>
-<ul>
-<li><b>Tier 1:</b> Clear, readable, easy extraction.</li>
-<li><b>Tier 2:</b> Some issues but still reliably readable.</li>
-<li><b>Tier 3:</b> Major issues, unreliable extraction.</li>
-</ul>
-</div>
+        <label>Optional notes from the image</label>
+        <textarea id="notes" placeholder="Example: slight glare but all text is still readable, multiple devices but one clear main subject, units missing, heavy blur, etc."></textarea>
 
+        <button onclick="checkAnswer()">Cross Check Answer</button>
+        <button class="secondary" onclick="clearForm()">Clear</button>
+
+        <div id="result"></div>
+      </section>
+
+      <aside class="card">
+        <h2>📌 Factor Guide</h2>
+        <div id="guide"></div>
+
+        <details open>
+          <summary>🚦 Tier Boundary Reminder</summary>
+          <ul class="small">
+            <li><b>Tier 1:</b> no meaningful issue for that factor.</li>
+            <li><b>Tier 2:</b> issue exists, but all key information remains readable/extractable.</li>
+            <li><b>Tier 3:</b> issue prevents reliable extraction.</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>🏥 Medical Device Special Rules</summary>
+          <ul class="small">
+            <li>Focus on the displayed measurement.</li>
+            <li>Blood pressure: systolic + diastolic.</li>
+            <li>Glucose meter: glucose value.</li>
+            <li>Weight scale: body mass.</li>
+            <li>Orientation includes display rotation, not just perspective.</li>
+            <li>Text Structure Tier 2 means values visible but units missing.</li>
+          </ul>
+        </details>
+      </aside>
+    </div>
+  </section>
+
+  <section id="examplesTab" class="hidden">
+    <div class="card">
+      <h2>🖼️ Example-Based Practice</h2>
+      <p class="small">Scenario cards modeled from the guideline examples and edge cases: clear vs low contrast, minor glare vs unreadable glare, one device vs multiple unclear devices, units missing vs key readings missing.</p>
+      <button onclick="loadRandomExample()">Random Example</button>
+      <button class="purple" onclick="revealExampleAnswer()">Reveal Explanation</button>
+      <div id="practiceBox"></div>
+    </div>
+  </section>
+
+  <section id="rubricTab" class="hidden">
+    <div class="card">
+      <h2>🧠 Complete Rubric Cheat Sheet</h2>
+      <table>
+        <thead><tr><th>Factor</th><th>Tier 1</th><th>Tier 2</th><th>Tier 3</th></tr></thead>
+        <tbody id="cheatRows"></tbody>
+      </table>
+    </div>
+  </section>
 </main>
 
 <script>
-function checkAnswer() {
-    const factor = document.getElementById("factor").value;
-    const tier = document.getElementById("tier").value;
-    const notes = document.getElementById("notes").value.toLowerCase();
+const generalFactors = ["Layout","Language","Text Style","Text Contrast","Damage","Object Count","Object Density","Text Structure","Completeness","Orientation","Text Clarity","Lighting","Background"];
+const medicalFactors = ["Text Contrast","Damage","Object Count","Text Structure","Completeness","Orientation","Text Clarity","Lighting"];
 
-    let result = "";
-    let className = "result good";
+const RUBRIC = {
+  "Layout": {t1:"Standard, clean, logical layout; key info stands out.",t2:"Non-standard/busy layout; key info harder but still possible to extract.",t3:"Confusing/unintelligible layout; key info very difficult or impossible to extract."},
+  "Language": {t1:"Key information in a single language.",t2:"Multiple languages, but one dominant language contains the key information.",t3:"Multiple mixed languages with no dominant language containing all key information."},
+  "Text Style": {t1:"Standard printed fonts.",t2:"Stylized/decorative font or legible handwriting; may need extra pass.",t3:"Complex font or illegible handwriting; key text extremely hard or impossible to read."},
+  "Text Contrast": {t1:"High/moderate contrast; key text easy to see. Medical: ON LCD segments clearly distinguishable from OFF.",t2:"Low contrast; harder to read but still legible. Medical: OFF LCD segments may be faintly visible but reading is still possible.",t3:"Very low contrast; text blends with background/display or LCD ON/OFF segments cannot be distinguished."},
+  "Damage": {t1:"Pristine; no folds, stains, smudges, tears affecting key info.",t2:"Minor damage; key info slightly harder but still legible.",t3:"Major damage makes key information illegible or extremely difficult to read."},
+  "Object Count": {t1:"One/few meaningful objects. For medical: single health device.",t2:"Several objects but readable. For medical: multiple devices but one clear primary device.",t3:"Too many objects or unclear primary object. For medical: multiple devices and unclear main subject."},
+  "Object Density": {t1:"Small number of items inside the object; clear.",t2:"Many items; slightly crowded but still recognizable/readable.",t3:"Too many items; very crowded and difficult to recognize/read."},
+  "Text Structure": {t1:"Simple structure; key info in one clear place. Medical: all key readings and units visible.",t2:"Somewhat complex. Medical: numeric values visible but units missing.",t3:"Very complex or key information missing."},
+  "Completeness": {t1:"Entire object and all key information visible.",t2:"Minor crop/occlusion; all key info still visible and legible.",t3:"Significant missing/hidden/obscured parts; key text not fully visible or legible."},
+  "Orientation": {t1:"Straight/correct. General: tilt <30°. Medical: correct display rotation.",t2:"Tilted/skewed/curved/warped but readable. General: 30–60°. Medical: within ±45°.",t3:"Severe angle/rotation. General: beyond 60° and unreadable. Medical: beyond ±45°."},
+  "Text Clarity": {t1:"High resolution, crisp, in focus; key text easy to read.",t2:"Minor blur/distortion/out-of-focus; key info remains readable.",t3:"Major blur/distortion; key information unreadable or requires unreliable zooming."},
+  "Lighting": {t1:"Ideal lighting; no shadow/glare/reflection affecting text.",t2:"Minor shadow/glare/reflection; key information remains visible and understandable.",t3:"Heavy shadow/glare/reflection obscures key text or makes critical info impossible to read."},
+  "Background": {t1:"Clean/plain/high contrast background; minimal noise.",t2:"Some background noise or low contrast; key information still extractable.",t3:"Very cluttered/noisy/complex background prevents clear extraction."}
+};
 
-    if (
-        notes.includes("unreadable") ||
-        notes.includes("cannot read") ||
-        notes.includes("heavy glare") ||
-        notes.includes("extremely blurry")
-    ) {
-        result = "⚠️ Guideline logic suggests Tier 3 because extraction is unreliable or impossible.";
-        className = "result bad";
-    }
-    else if (
-        notes.includes("slight glare") ||
-        notes.includes("slightly blurry") ||
-        notes.includes("still readable") ||
-        notes.includes("minor")
-    ) {
-        result = "✅ Guideline logic suggests Tier 2 because issues exist but text remains readable.";
-        className = "result warn";
-    }
-    else {
-        result = "✅ Guideline logic suggests Tier 1 because the image appears clear and readable.";
-        className = "result good";
-    }
+const CHECKS = {
+  "Layout": {
+    t1:["Layout is clean/logical","Key information is in expected places","Graphics/promotional elements do not distract"],
+    t2:["Layout is busy or unusual","Key information is harder to locate but still extractable","Graphics/background compete with text but do not prevent reading"],
+    t3:["Layout is confusing or poorly organized","Text is entangled with graphics/irrelevant content","Key information is very difficult or impossible to extract"]
+  },
+  "Language": {
+    t1:["Key information is in one language"],
+    t2:["Multiple languages appear","One dominant language contains the key information","Other language text is duplicate or non-essential"],
+    t3:["Key information is split across multiple languages","No single language captures all main/key information"]
+  },
+  "Text Style": {
+    t1:["Key text uses standard printed font"],
+    t2:["Key text uses decorative/stylized font but is readable","Handwriting is legible"],
+    t3:["Font is heavily stylized/complex","Handwriting is illegible","Text is nearly impossible to read"]
+  },
+  "Text Contrast": {
+    t1:["High/moderate contrast","Text clearly stands out from background/display","Medical: ON LCD segments clearly distinguishable from OFF segments"],
+    t2:["Low contrast","Text is harder to read but still legible","Medical: OFF LCD segments may be faintly visible but reading is still possible"],
+    t3:["Very low contrast","Text color and background/display are very similar","Medical: ON/OFF LCD segments cannot be clearly distinguished"]
+  },
+  "Damage": {
+    t1:["No visible folds, stains, smudges, tears, crumples"],
+    t2:["Minor folds/stains/smudges/crumples","Key text remains legible"],
+    t3:["Major folds/stains/smudges/tears/crumples","Damage makes key text illegible or extremely difficult"]
+  },
+  "Object Count": {
+    t1:["Only one or a few meaningful objects","Events/contacts: 1–3 flyers/cards or one calendar grid","Receipts/passes/devices: one item only"],
+    t2:["Several objects but each is recognizable/readable","Events/contacts: 4–6 flyers/cards","Medical: multiple health devices but one clear main device"],
+    t3:["Too many objects, very crowded","Events/contacts: 7+ flyers/cards or 2+ calendar grids","Receipts/passes/devices: 2+ separate/unrelated items or unclear primary device"]
+  },
+  "Object Density": {
+    t1:["Small number of items inside one object","Event poster: 1–4 schedules","Receipt: 1–12 items"],
+    t2:["Many items but still readable","Event poster: 5–10 schedules","Receipt: 13–24 items"],
+    t3:["Too many items; very crowded","Event poster: 11+ schedules","Receipt: 25+ items or dense calendar with multiple events per day"]
+  },
+  "Text Structure": {
+    t1:["Key info contained in one object/clear structure","Receipt item names/prices in a single clear column","Medical: all key readings and units are visible"],
+    t2:["Key info spread across multiple objects/sections","Receipt uses multiple columns but still parseable","Medical: numeric value is visible but unit is missing"],
+    t3:["Too many columns/items to parse reliably","Medical: some key reading is missing from screen"]
+  },
+  "Completeness": {
+    t1:["Entire object is visible","All key information text is visible"],
+    t2:["Minor crop/obstruction/occlusion","All key information remains visible and legible"],
+    t3:["Significant parts are cut off/hidden/obscured","Key information is not fully visible or not legible"]
+  },
+  "Orientation": {
+    t1:["General: object/text is straight and flat, tilt under 30°","Medical: display text is in correct orientation"],
+    t2:["General: tilted/skewed/curved/warped 30–60° but readable","Medical: text rotated within ±45°"],
+    t3:["General: angle beyond 60° and text cannot be read","Medical: text rotated beyond ±45°"]
+  },
+  "Text Clarity": {
+    t1:["High resolution","Crisp and in focus","Text readable without second glance"],
+    t2:["Minor blur/distortion/out-of-focus","Text may require a second glance but remains readable"],
+    t3:["Significant blur/distortion","Text is extremely small/unclear or unreadable"]
+  },
+  "Lighting": {
+    t1:["Ideal lighting","No shadow/glare/reflection affecting text"],
+    t2:["Minor shadow/glare/reflection","Text remains visible and understandable"],
+    t3:["Significant shadow/glare/reflection","Critical text is obscured or impossible to read"]
+  },
+  "Background": {
+    t1:["Background is plain/clean/high contrast","Minimal visual noise"],
+    t2:["Some background noise or similar colors","Key information can still be extracted"],
+    t3:["Background is very cluttered/noisy/complex","Key information cannot be clearly read or extracted"]
+  }
+};
 
-    result += "<br><br><b>Your selected answer:</b> " + tier;
-    result += "<br><b>Factor:</b> " + factor;
-    result += "<br><br><i>Reminder:</i> The core rule is whether key information can still be reliably extracted.";
+const keywordHints = {
+  3:["unreadable","illegible","cannot read","can't read","impossible","not visible","missing","obscured","blocked","hidden","heavy glare","strong reflection","extremely blurry","very blurry","major blur","severe blur","no dominant","unclear main","too many","beyond 60","over 60","beyond 45","over 45","text blends","same color","indistinguishable"],
+  2:["still readable","still legible","readable but","legible but","harder to read","slight glare","minor glare","some glare","minor shadow","some shadow","slightly blurry","minor blur","moderate blur","small text","partially","minor crop","low contrast","faint","units missing","unit missing","value visible","clear main","dominant language","busy","crowded but readable","tilted","skewed","warped","30","45","minor rotation","stylized","handwriting"],
+  1:["clear","clean","crisp","sharp","easy to read","fully visible","complete","high contrast","moderate contrast","single","standard","pristine","plain background","correct orientation","perfect lighting","in focus"]
+};
 
-    document.getElementById("result").className = className;
-    document.getElementById("result").innerHTML = result;
+const examples = [
+  {cat:"Medical Device",factor:"Text Contrast",scenario:"A glucose meter display has black digits on a pale screen. The number and unit are easy to read; inactive LCD segments do not confuse the reading.",answer:1,why:"High/moderate contrast and ON segments are clearly distinguishable, so Tier 1."},
+  {cat:"Medical Device",factor:"Text Contrast",scenario:"A blood pressure monitor display is washed by room light. The digits are faint and OFF LCD segments are slightly visible, but systolic/diastolic values can still be read.",answer:2,why:"Low contrast makes it harder, but key values remain legible, so Tier 2."},
+  {cat:"Medical Device",factor:"Text Contrast",scenario:"The display background and digits look almost the same. ON and OFF LCD segments cannot be reliably distinguished.",answer:3,why:"Very low contrast prevents reliable extraction, so Tier 3."},
+  {cat:"Medical Device",factor:"Text Structure",scenario:"A scale shows the body mass number, but the unit label is cut off or not visible.",answer:2,why:"Medical Text Structure Tier 2: numeric value visible but unit missing."},
+  {cat:"Medical Device",factor:"Object Count",scenario:"Two devices are visible, but one large blood pressure monitor is centered and clearly the intended subject.",answer:2,why:"Multiple devices, clear primary device = Tier 2."},
+  {cat:"Medical Device",factor:"Object Count",scenario:"Several health devices are shown together and it is unclear which reading is the target.",answer:3,why:"Multiple devices with unclear primary subject = Tier 3."},
+  {cat:"Receipt",factor:"Object Density",scenario:"A receipt lists about 18 line items. It is slightly crowded but item names and prices are readable.",answer:2,why:"Receipt with 13–24 readable items maps to Tier 2."},
+  {cat:"Receipt",factor:"Object Density",scenario:"A very long receipt has 30+ items packed tightly and individual lines are difficult to separate.",answer:3,why:"25+ items or difficult parsing maps to Tier 3."},
+  {cat:"Event",factor:"Layout",scenario:"A poster has promotional graphics and unusual placement, but date, time, and location are still extractable.",answer:2,why:"Busy/non-standard but extractable = Tier 2."},
+  {cat:"Contact",factor:"Text Style",scenario:"A business card uses decorative script for the name, but the phone number and email are readable after a second glance.",answer:2,why:"Stylized but legible text = Tier 2."},
+  {cat:"Pass",factor:"Completeness",scenario:"The edge of the pass is cropped, but barcode, event name, date, and seat details are fully visible.",answer:2,why:"Minor crop with all key info visible = Tier 2."},
+  {cat:"Event",factor:"Background",scenario:"A flyer is posted on a patterned wall. The wall is noisy, but the flyer text remains readable.",answer:2,why:"Background noise exists but extraction is still possible = Tier 2."},
+  {cat:"Receipt",factor:"Lighting",scenario:"A bright glare crosses the total and item prices, making critical amounts impossible to read.",answer:3,why:"Lighting obscures key text, so Tier 3."},
+  {cat:"Event",factor:"Orientation",scenario:"A poster is photographed at a steep side angle, beyond 60 degrees, and the event text cannot be read.",answer:3,why:"General orientation beyond 60 degrees with unreadable text = Tier 3."}
+];
+let currentExample = null;
+
+function showTab(name, btn){
+  ["checker","examples","rubric"].forEach(t => document.getElementById(t+"Tab").classList.add("hidden"));
+  document.getElementById(name+"Tab").classList.remove("hidden");
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
 }
-</script>
 
+function toggleTheme(){
+  document.body.classList.toggle("light");
+  const isLight = document.body.classList.contains("light");
+  localStorage.setItem("iq_theme", isLight ? "light" : "dark");
+  document.getElementById("themeBtn").textContent = isLight ? "☀️ Light Mode" : "🌙 Dark Mode";
+}
+
+function refreshFactorList(){
+  const cat = document.getElementById("category").value;
+  const select = document.getElementById("factor");
+  select.innerHTML = "";
+  const factors = cat === "Medical Device" ? medicalFactors : generalFactors;
+  factors.forEach(f => {
+    const opt = document.createElement("option");
+    opt.textContent = f; opt.value = f; select.appendChild(opt);
+  });
+}
+
+function renderChecklist(){
+  const factor = document.getElementById("factor").value;
+  const checks = CHECKS[factor];
+  const box = document.getElementById("checklist");
+  box.innerHTML = "";
+  [1,2,3].forEach(t => {
+    const title = document.createElement("div");
+    title.innerHTML = `<span class="pill t${t}">Tier ${t}</span>`;
+    box.appendChild(title);
+    checks["t"+t].forEach((txt, idx) => {
+      const id = `c_${t}_${idx}`;
+      const label = document.createElement("label");
+      label.innerHTML = `<input type="checkbox" data-tier="${t}" id="${id}"> ${txt}`;
+      box.appendChild(label);
+    });
+  });
+}
+
+function showFactorGuide(){
+  const factor = document.getElementById("factor").value;
+  const r = RUBRIC[factor];
+  document.getElementById("guide").innerHTML = `
+    <h3>${factor}</h3>
+    <p><span class="pill t1">Tier 1</span> ${r.t1}</p>
+    <p><span class="pill t2">Tier 2</span> ${r.t2}</p>
+    <p><span class="pill t3">Tier 3</span> ${r.t3}</p>
+  `;
+}
+
+function inferFromNotes(notes){
+  notes = notes.toLowerCase();
+  for(const t of [3,2,1]){
+    if(keywordHints[t].some(k => notes.includes(k))) return t;
+  }
+  return null;
+}
+
+function inferFromChecklist(){
+  const checks = Array.from(document.querySelectorAll("#checklist input:checked"));
+  if(checks.length === 0) return null;
+  const tiers = checks.map(c => Number(c.dataset.tier));
+  if(tiers.includes(3)) return 3;
+  if(tiers.includes(2)) return 2;
+  return 1;
+}
+
+function checkAnswer(){
+  const factor = document.getElementById("factor").value;
+  const selected = Number(document.getElementById("tier").value);
+  const notes = document.getElementById("notes").value;
+  const byChecklist = inferFromChecklist();
+  const byNotes = inferFromNotes(notes);
+  const suggested = byChecklist || byNotes || null;
+  const resultBox = document.getElementById("result");
+
+  if(!suggested){
+    resultBox.className = "result unclear";
+    resultBox.innerHTML = `
+      <h3>⚠️ Not enough evidence to verify</h3>
+      <p>Select checklist statements or add notes that describe the image. Empty evidence defaults to nothing because we are not doing fortune-telling for enterprise rubrics today.</p>
+      <p><b>Your selected answer:</b> Tier ${selected}</p>
+      <p><b>Factor:</b> ${factor}</p>
+    `;
+    return;
+  }
+
+  const match = selected === suggested;
+  const r = RUBRIC[factor];
+  const className = match ? "result match" : "result mismatch";
+  const verdict = match ? "✅ Your answer matches the guideline logic." : "❌ Your selected tier does not match the strongest guideline evidence.";
+
+  let source = byChecklist ? "checklist selections" : "notes keywords";
+  let why = suggested === 1 ? r.t1 : suggested === 2 ? r.t2 : r.t3;
+
+  resultBox.className = className;
+  resultBox.innerHTML = `
+    <h3>${verdict}</h3>
+    <p><b>Your answer:</b> <span class="pill t${selected}">Tier ${selected}</span></p>
+    <p><b>Suggested by rubric:</b> <span class="pill t${suggested}">Tier ${suggested}</span></p>
+    <p><b>Factor:</b> ${factor}</p>
+    <p><b>Evidence source:</b> ${source}</p>
+    <p><b>Why:</b> ${why}</p>
+    <details open>
+      <summary>How to decide this factor</summary>
+      <ul>
+        <li><b>Tier 1:</b> ${r.t1}</li>
+        <li><b>Tier 2:</b> ${r.t2}</li>
+        <li><b>Tier 3:</b> ${r.t3}</li>
+      </ul>
+    </details>
+    <p class="small"><b>Safety rule:</b> If key information cannot be reliably extracted, choose Tier 3. If it is harder but still readable, choose Tier 2. If it is clean and easy, choose Tier 1.</p>
+  `;
+}
+
+function clearForm(){
+  document.getElementById("notes").value = "";
+  document.querySelectorAll("#checklist input").forEach(i => i.checked = false);
+  document.getElementById("result").innerHTML = "";
+  document.getElementById("result").className = "";
+}
+
+function loadRandomExample(){
+  currentExample = examples[Math.floor(Math.random()*examples.length)];
+  document.getElementById("practiceBox").innerHTML = `
+    <div class="example">
+      <div class="fakeimg">Scenario Card<br>${currentExample.cat} · ${currentExample.factor}</div>
+      <h4>${currentExample.cat} · ${currentExample.factor}</h4>
+      <p>${currentExample.scenario}</p>
+      <label>Your answer</label>
+      <select id="exampleGuess">
+        <option value="1">Tier 1</option>
+        <option value="2">Tier 2</option>
+        <option value="3">Tier 3</option>
+      </select>
+      <button onclick="gradeExample()">Check Example</button>
+      <div id="exampleResult"></div>
+    </div>
+  `;
+}
+
+function gradeExample(){
+  if(!currentExample) return;
+  const guess = Number(document.getElementById("exampleGuess").value);
+  const ok = guess === currentExample.answer;
+  document.getElementById("exampleResult").className = ok ? "result match" : "result mismatch";
+  document.getElementById("exampleResult").innerHTML = `
+    <h3>${ok ? "✅ Correct" : "❌ Not quite"}</h3>
+    <p><b>Correct answer:</b> <span class="pill t${currentExample.answer}">Tier ${currentExample.answer}</span></p>
+    <p>${currentExample.why}</p>
+  `;
+}
+
+function revealExampleAnswer(){
+  if(!currentExample) loadRandomExample();
+  document.getElementById("exampleResult").className = "result match";
+  document.getElementById("exampleResult").innerHTML = `
+    <h3>Answer Revealed</h3>
+    <p><b>Correct answer:</b> <span class="pill t${currentExample.answer}">Tier ${currentExample.answer}</span></p>
+    <p>${currentExample.why}</p>
+  `;
+}
+
+function renderCheatSheet(){
+  const rows = Object.entries(RUBRIC).map(([factor,r]) => `
+    <tr>
+      <td><b>${factor}</b></td>
+      <td>${r.t1}</td>
+      <td>${r.t2}</td>
+      <td>${r.t3}</td>
+    </tr>
+  `).join("");
+  document.getElementById("cheatRows").innerHTML = rows;
+}
+
+function init(){
+  if(localStorage.getItem("iq_theme") === "light"){
+    document.body.classList.add("light");
+    document.getElementById("themeBtn").textContent = "☀️ Light Mode";
+  }
+  refreshFactorList();
+  renderChecklist();
+  showFactorGuide();
+  renderCheatSheet();
+  loadRandomExample();
+}
+init();
+</script>
 </body>
 </html>
