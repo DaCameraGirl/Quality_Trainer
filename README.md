@@ -1,28 +1,24 @@
-
 # 📸 Image Quality Evaluation Trainer
 
-Interactive GitHub Pages onboarding trainer for:
-- Events
-- Contacts
-- Receipts
-- Passes
-- Medical Devices
+Interactive GitHub Pages onboarding trainer for image quality evaluation.
 
-## Features
-- Practice evaluator
-- Mock onboarding training
-- Tier explanations
-- Interactive answer checker
-- Cross-check onboarding answers
-- Medical device special rules
+## Includes
+- Answer cross-checker
+- Full factor checklist
+- Tier 1 / Tier 2 / Tier 3 rubric logic
+- Medical-device special rules
+- Example-based practice cards
+- Dark/light mode toggle
+- Full rubric cheat sheet
 
-## GitHub Pages Setup
-1. Upload files to GitHub
-2. Go to Settings → Pages
-3. Deploy from branch
-4. Select `main` and `/root`
-5. Save
+## GitHub Pages
+Upload `index.html` and this `README.md` to the root of a GitHub repo.
 
-Then open your live link.
+Then enable:
 
-Because apparently humanity needed a full web app to decide whether a receipt is slightly blurry.
+Settings → Pages → Deploy from branch → main → /root
+
+## Core Rule
+Tier 1 = clear and easy extraction.  
+Tier 2 = issues exist but key information is still readable.  
+Tier 3 = key information is missing, blocked, or not reliably readable.
