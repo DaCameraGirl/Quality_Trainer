@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Quality Evaluation Trainer</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background:#111827;
+    color:white;
+    margin:0;
+    padding:0;
+}
+header {
+    background:#1f2937;
+    padding:20px;
+    text-align:center;
+}
+main {
+    padding:20px;
+    max-width:900px;
+    margin:auto;
+}
+.card {
+    background:#1f2937;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:20px;
+}
+button {
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:12px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    margin:5px;
+}
+select, textarea {
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    margin-top:10px;
+    margin-bottom:10px;
+}
+.result {
+    margin-top:15px;
+    padding:15px;
+    border-radius:10px;
+    background:#0f172a;
+}
+.good { border-left:5px solid #22c55e; }
+.warn { border-left:5px solid #f59e0b; }
+.bad { border-left:5px solid #ef4444; }
+</style>
+</head>
+<body>
+
+<header>
+<h1>📸 Image Quality Evaluation Trainer</h1>
+<p>Interactive onboarding practice + answer checker</p>
+</header>
+
+<main>
+
+<div class="card">
+<h2>✅ Answer Cross-Checker</h2>
+
+<label>Category</label>
+<select id="category">
+<option>Medical Device</option>
+<option>Receipt</option>
+<option>Pass</option>
+<option>Event</option>
+<option>Contact</option>
+</select>
+
+<label>Factor</label>
+<select id="factor">
+<option>Text Contrast</option>
+<option>Lighting</option>
+<option>Orientation</option>
+<option>Text Clarity</option>
+<option>Completeness</option>
+<option>Object Count</option>
+<option>Background</option>
+</select>
+
+<label>Your Tier Choice</label>
+<select id="tier">
+<option>Tier 1</option>
+<option>Tier 2</option>
+<option>Tier 3</option>
+</select>
+
+<label>Describe what you see in the image</label>
+<textarea id="notes" rows="6" placeholder="Example: Slight glare on screen but numbers are still readable..."></textarea>
+
+<button onclick="checkAnswer()">Cross Check Answer</button>
+
+<div id="result"></div>
+</div>
+
+<div class="card">
+<h2>🧠 Quick Tier Logic</h2>
+<ul>
+<li><b>Tier 1:</b> Clear, readable, easy extraction.</li>
+<li><b>Tier 2:</b> Some issues but still reliably readable.</li>
+<li><b>Tier 3:</b> Major issues, unreliable extraction.</li>
+</ul>
+</div>
+
+</main>
+
+<script>
+function checkAnswer() {
+    const factor = document.getElementById("factor").value;
+    const tier = document.getElementById("tier").value;
+    const notes = document.getElementById("notes").value.toLowerCase();
+
+    let result = "";
+    let className = "result good";
+
+    if (
+        notes.includes("unreadable") ||
+        notes.includes("cannot read") ||
+        notes.includes("heavy glare") ||
+        notes.includes("extremely blurry")
+    ) {
+        result = "⚠️ Guideline logic suggests Tier 3 because extraction is unreliable or impossible.";
+        className = "result bad";
+    }
+    else if (
+        notes.includes("slight glare") ||
+        notes.includes("slightly blurry") ||
+        notes.includes("still readable") ||
+        notes.includes("minor")
+    ) {
+        result = "✅ Guideline logic suggests Tier 2 because issues exist but text remains readable.";
+        className = "result warn";
+    }
+    else {
+        result = "✅ Guideline logic suggests Tier 1 because the image appears clear and readable.";
+        className = "result good";
+    }
+
+    result += "<br><br><b>Your selected answer:</b> " + tier;
+    result += "<br><b>Factor:</b> " + factor;
+    result += "<br><br><i>Reminder:</i> The core rule is whether key information can still be reliably extracted.";
+
+    document.getElementById("result").className = className;
+    document.getElementById("result").innerHTML = result;
+}
+</script>
+
+</body>
+</html>
